@@ -24,11 +24,15 @@ messages will give a hint on the condition and also the trend (give it some time
 Opening the windows may also be an option to cool down quickly.  
 If the text messages annoy you, you can disable them by unchecking the `Show hint messages` checkbox.
 
+When starting cold&dark in freezing temperatures, the plane may freeze over. In this case you need to clean it (see aircraft options dialog).
+To prevent this, you should apply the plane cover when securing your craft.
+
 
 ### Complex engine procedures
 Unchecking `Complex engine procedures and failures` allows a fairly basic engine mode where no priming is needed (just activate
 battery, apply enough mixture and press `s` to start), and no further damage can occur.  
 Otherwise you need to pay attention to varios engine related things:
+
 - Priming for startup  
   The priming procedure involves applying some fuel into the manifold by the fuel pump. The exact procedure is laid out in the checklist.
   The engine can be easily flooded, especially in cold weather (remedy actions also in the POH/Checklist).
@@ -55,8 +59,19 @@ Otherwise you need to pay attention to varios engine related things:
   engine at 1200 RPM. Should a magneto check reveal spark plug problems, its most of the time some fouled plugs. Put the engine to 1800 RPM and 50°
   lean of peak EGT. Let it run for about 30 seconds, monitor CHT. This should clean the deposits which a second magneto check should verify.  
 When parking the plane after flight, you should go to 1800 RPM and lean mix for 20 secs, then reduce throttle to 1000 RPM and then stop the engine by pulling mixture to the cut-off position.
+- `Allow starter cycle limits`  
+  If active, you need to observe the starter cycle, otherwise you risk burning trough the engine starter.
 - `Winter Kit`  
   The winter kit is needed in cold weather (<20°F/-6°C) to reduce cooling air flow. If not supplied, the engine will possibly not get warm enough to develop good power, but be sure to remove it in hot weather, otherwise you risk too high CHT temps.
+
+### Realistic Instruments
+When this option is activated, some instruments will be simulated more realistically.  
+The gyro based instruments will need more time to spin up fully (2-3 minutes), so for example give the HI/DG time before trying to calibrate it. Also, excess forces (steep turns, high G-loads) can introduce errors or even induce tumbling of the gyro.  
+The HI will be affected by some expected errors like precession due to earths rotation, as well as transport wander, so you need to check and recalibrate the instrument every 15 minutes or so.
+
+The magnetic compass can get stuck.
+
+Avionics can overheat (and fail) in very hot weather and/or failed avionics fan.
 
 ### Autostart
 The c182 features an autostart- and autoshutdown option which can be used to quickly start/stop the engine. The corresponding checklist items
@@ -131,6 +146,7 @@ Additionally to the default ones, the c182 knows the following:
 - `/engines/engine/manual-roughness-factor` (`0.0` to `1.0`) to induce engine roughness
 - `/engines/engine/manual-power-reduction-pct` (`0.0` to `1.0`) to make the engine less efficient
 - `/engines/engine/kill-engine` immediately kills the engine if set to `1`.
+- `/fdm/jsbsim/heat/init-moisture` (`0.0` to `1.0`) quick-induce fog/frost. The setting will be hold indefinitely, so reset to `0`.
 
 ### KAP 140 Autopilot
 The C182S features a highly detailed and realistic Bendix/Kind KAP 140 Autopilot. You can operate it like described in the manufacturers POH.  
@@ -157,6 +173,32 @@ The lower LCD row displays four different timing information, the active mode is
   - The elapsed timer starts when you selected ET mode and then push the _control_ button. The next button press stops the timer. Another press resets it to zero.
   - You can setup an countdown timer by by pressing the _select_ and _control_ buttons together (**shift-click one of the two buttons**). Enter the digits like just described at the FT alarm mode. After confirming the last digit, the countdown is armed and ready to be started by another press of _control_. The alarm will go off once the countdown reaches zero. You can confirm the the alarm by either pressing _select_ or _control_.
 
+### KR87 ADF receiver
+The Bendix/King KR87 ADF receiver can tune into NDBs. It also features two timers, which can be cycled by pressing the `FLT/ET` button.
+
+- Flight timer (FT):
+  - It starts counting upwards as soon as the unit receives power.
+  - It cannot be reset, despite momentarily switching the unit off.
+  - In addition to the Davtron 8003s FT timer (which can be reset) this might serve as a "total flight time timer".
+- Elapsed timer (ET):
+  - It starts counting upwards as soon as the unit receives power.
+  - Can be reset to `00:00` by shortly pressing the `SET/RST` button.
+  - Pressing `SET/RST` for more than two seconds will enter the _Set_-mode (indicated by flashing `ET` annunciator) for _ET countdown mode_:
+    - with the inner and outer knobs you can adjust the time.
+    - shortly pressing the `SET/RST` button will activate the countdown.
+    - Once the timer reaches `00:00`, the display will switch to `ET` mode and flash the digits for about 15 seconds. Also, an aural alarm is activated for about one second. The timer continues to count upwards when crossing `00:00`.
+
+When either of the two timer modes is active (`FT` or `ET` is annunctiated and right display shows time), turning the inner or outer knob will directly tune the _selected_ frequency. This might be useful to scan for stations.  
+You can return to the normal standby-tuning mode by shortly pressing the `FRQ` button.
+
+### KN62A DME
+The Bendix/King KN62A DME allows you to get measurements to a tuned VOR station and displays _distance_, _speed_ and _estimated time_ to the station.  
+It features a primary mode (`RMT`) which is autmatically slaved to NAV1.  
+Changing the mode to `FREQ` allows you to adjust the secondary frequency using the inner and outer frequency selection knobs (while in `FREQ` mode, the distance to the station is displayed, so you can see if you have reception.).  
+Finally, the `GS/T` mode locks the secondary frequency selection and displays _distance_, _speed_ and _estimated time_ to the secondary station.
+
+This way, you can scan for stations and get information about a station without the need to retune NAV1.
+
 ### GMA 340 FGCom integration ###
 If enabled, this integrates the GMA 340 audio panel with FGCom. Most notably, you can select the radio on which you want to transmit by pressing the respective COM/MIC button. Only one can be active for transmission. If you press the FGCOM PTT button (`space`), you will transmit over the selected radio, which indicates a blinking led.
 
@@ -180,6 +222,15 @@ from the aircraft options menu to make them all jump out one after another.
 Only passengers inside the plane will jump out, so add them using the "fuel and payload" settings dialog.  
 Jump procedure is that they will crawl outside to the strut, then release; so plan for the drag.
 
+
+Engine lever operation
+----------------------
+The Throttle, Prop and Mixture control levers can be operated either by keyboard,
+by mouse dragging or by mouse wheel (when pointing on the lever and turning the wheel):
+
+- Big adjustments: press `shift` while normal operation.
+- Medium adjustments are done by just operating the levers.
+- Small adjustments: press `alt` while normal operation. This simulates the Throttle friction lock and vernier features of the prop and mixture.
 
 
 FAQ

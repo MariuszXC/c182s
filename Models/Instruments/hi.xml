@@ -113,35 +113,46 @@
   <animation>
     <type>rotate</type>
     <object-name>Hdg-Knob</object-name>
-     <property>autopilot/settings/heading-bug-deg</property>
-<factor>10</factor>
-		<center>
-			<x-m>0.012891</x-m>
-			<y-m>0.035372</y-m>
-			<z-m>-0.033017</z-m>
-		</center>
-		<axis>
-			<x>-0.013332</x>
-			<y>0</y>
-			<z>0</z>
-		</axis>
+    <property>autopilot/settings/heading-bug-deg</property>
+    <factor>10</factor>
+    <center>
+      <x-m>0.012891</x-m>
+      <y-m>0.035372</y-m>
+      <z-m>-0.033017</z-m>
+    </center>
+    <axis>
+      <x>-0.013332</x>
+      <y>0</y>
+      <z>0</z>
+    </axis>
   </animation>
   
   <animation>
     <type>rotate</type>
     <object-name>OBS-Knob</object-name>
-     <property>instrumentation/heading-indicator/align-deg</property>
-<factor>10</factor>
-		<center>
-			<x-m>0.012842</x-m>
-			<y-m>-0.034351</y-m>
-			<z-m>-0.033017</z-m>
-		</center>
-		<axis>
-			<x>-0.01343</x>
-			<y>0</y>
-			<z>0</z>
-		</axis>
+    <property>instrumentation/heading-indicator/align-deg</property>
+    <factor>10</factor>
+    <center>
+      <x-m>0.012842</x-m>
+      <y-m>-0.034351</y-m>
+      <z-m>-0.033017</z-m>
+    </center>
+    <axis>
+      <x>-0.01343</x>
+      <y>0</y>
+      <z>0</z>
+    </axis>
+  </animation>
+  <animation>
+    <type>translate</type>
+    <object-name>OBS-Knob</object-name>
+    <property>instrumentation/heading-indicator/caged-flag</property>
+    <factor>0.004</factor>
+    <axis>
+        <x>-1.0</x>
+        <y>0.0</y>
+        <z>0.0</z>
+    </axis>
   </animation>
 
 <!--     Heading Bug control    -->
@@ -168,7 +179,7 @@
      <command>set-tooltip</command>
      <tooltip-id>heading-bug</tooltip-id>
      <mapping>heading</mapping>
-     <label>Heading Bug: %3.0f</label>
+     <label>Heading Bug: %3d</label>
      <property>autopilot/settings/heading-bug-deg</property>
    </binding>
   </hovered>
@@ -182,14 +193,6 @@
     <action>
       <binding>
         <command>property-adjust</command>
-        <property>instrumentation/heading-indicator/offset-deg</property>
-        <factor>1</factor>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
         <property>instrumentation/heading-indicator/align-deg</property>
         <factor>1</factor>
         <min>0</min>
@@ -198,21 +201,116 @@
       </binding>
       <binding>
         <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
+      </binding>
+      <binding>
+        <command>nasal</command>
         <script>c182s.click("heading-offset-dial")</script>
       </binding>
     </action>
+    <shift-action>
+      <binding>
+        <condition>
+          <greater-than>
+            <property>sim/time/elapsed-sec</property>
+            <expression>
+              <sum>
+                <property>instrumentation/heading-indicator/obs_last-shift-click</property>
+                <value>1</value>
+              </sum>
+            </expression>
+          </greater-than>
+        </condition>
+        <command>property-toggle</command>
+        <property>instrumentation/heading-indicator/caged-flag</property>
+      </binding>
+
+      <binding>
+        <condition>
+          <less-than-equals>
+            <property>sim/time/elapsed-sec</property>
+            <expression>
+              <sum>
+                <property>instrumentation/heading-indicator/obs_last-shift-click</property>
+                <value>1</value>
+              </sum>
+            </expression>
+          </less-than-equals>
+        </condition>
+        <command>property-adjust</command>
+        <property>instrumentation/heading-indicator/align-deg</property>
+        <factor>5</factor>
+        <min>0</min>
+        <max>360</max>
+        <wrap>1</wrap>
+      </binding>
+      <binding>
+        <condition>
+          <less-than-equals>
+            <property>sim/time/elapsed-sec</property>
+            <expression>
+              <sum>
+                <property>instrumentation/heading-indicator/obs_last-shift-click</property>
+                <value>1</value>
+              </sum>
+            </expression>
+          </less-than-equals>
+        </condition>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving, uncage afterwards
+            setprop("instrumentation/heading-indicator/caged-flag", 1);
+            
+            var rotateAction = maketimer(1.0, func {
+                setprop("instrumentation/heading-indicator/caged-flag", 0);
+            });
+            rotateAction.singleShot = 1;
+            rotateAction.start();
+        ]]></script>
+      </binding>
+      <binding>
+        <command>property-assign</command>
+        <property>instrumentation/heading-indicator/obs_last-shift-click</property>
+        <property>sim/time/elapsed-sec</property>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script>c182s.click("heading-offset-dial")</script>
+      </binding>
+    </shift-action>
   
     <!-- faster rate of change than the default -->
     <drag-scale-px>4</drag-scale-px>
-    <shift-repeat type="int">5</shift-repeat>
     
     <hovered>
       <binding>
         <command>set-tooltip</command>
         <tooltip-id>heading-offset</tooltip-id>
-        <label>Heading: %3.0f</label>
+        <label>%s</label>
         <property>instrumentation/heading-indicator/indicated-heading-deg</property>
-        <mapping>heading</mapping>
+        <mapping>nasal</mapping>
+        <script>
+          var heading = getprop("instrumentation/heading-indicator/indicated-heading-deg");
+          heading = math.round(heading);
+          if (heading == 0) heading = 360;
+          var returnString = "Heading: " ~ sprintf("%3d", heading);
+          if (getprop("instrumentation/heading-indicator/caged-flag")) {
+              returnString = returnString ~ "\n(caged)";
+          }
+          return returnString;
+        </script>
       </binding>
     </hovered>
    </animation>
@@ -228,7 +326,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -236,10 +334,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -252,7 +350,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>5</step>
         <min>0</min>
         <max>360</max>
@@ -265,7 +363,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -273,10 +371,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -289,7 +387,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -297,10 +395,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -312,7 +410,7 @@
         <command>set-tooltip</command>
         <tooltip-id>heading-bug</tooltip-id>
         <mapping>heading</mapping>
-        <label>Heading Bug: %3.0f</label>
+        <label>Heading Bug: %3d</label>
         <property>autopilot/settings/heading-bug-deg</property>
       </binding>
     </hovered>
@@ -328,7 +426,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -336,10 +434,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -352,7 +450,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-5</step>
         <min>0</min>
         <max>360</max>
@@ -365,7 +463,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -373,10 +471,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -389,7 +487,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -397,10 +495,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/autopilot/settings/heading-bug-deg</property>
+        <property>autopilot/settings/heading-bug-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -412,7 +510,7 @@
         <command>set-tooltip</command>
         <tooltip-id>heading-bug</tooltip-id>
         <mapping>heading</mapping>
-        <label>Heading Bug: %3.0f</label>
+        <label>Heading Bug: %3d</label>
         <property>autopilot/settings/heading-bug-deg</property>
       </binding>
     </hovered>
@@ -429,15 +527,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -449,10 +539,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -460,14 +550,30 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
     </action>  
     <action>
@@ -476,19 +582,27 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>5</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
       </binding>
       <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
-        <step>5</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
       <binding>
         <command>nasal</command>
@@ -501,15 +615,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>-1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -517,10 +623,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -528,14 +634,30 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
       <binding>
         <command>nasal</command>
@@ -548,15 +670,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -564,10 +678,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -575,14 +689,30 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
       <binding>
         <command>nasal</command>
@@ -593,9 +723,19 @@
       <binding>
         <command>set-tooltip</command>
         <tooltip-id>heading-offset</tooltip-id>
-        <label>Heading: %3.0f</label>
+        <label>%s</label>
         <property>instrumentation/heading-indicator/indicated-heading-deg</property>
-        <mapping>heading</mapping>
+        <mapping>nasal</mapping>
+        <script>
+          var heading = getprop("instrumentation/heading-indicator/indicated-heading-deg");
+          heading = math.round(heading);
+          if (heading == 0) heading = 360;
+          var returnString = "Heading: " ~ sprintf("%3d", heading);
+          if (getprop("instrumentation/heading-indicator/caged-flag")) {
+              returnString = returnString ~ "\n(caged)";
+          }
+          return returnString;
+        </script>
       </binding>
     </hovered>
   </animation>
@@ -610,15 +750,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>-1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -626,10 +758,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -637,10 +769,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -649,6 +781,22 @@
       <binding>
         <command>nasal</command>
         <script>c182s.click("heading-offset-dial")</script>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
     </action>  
     <action>
@@ -657,15 +805,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>-5</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-5</step>
         <min>0</min>
         <max>360</max>
@@ -675,6 +815,22 @@
         <command>nasal</command>
         <script>c182s.click("heading-offset-dial")</script>
       </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
+      </binding>
     </action>
     <action>
       <name>scrollwheel increase</name>
@@ -682,15 +838,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>-1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-1</step>
         <min>0</min>
         <max>360</max>
@@ -698,10 +846,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
@@ -709,14 +857,30 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>-4</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
       <binding>
         <command>nasal</command>
@@ -729,15 +893,7 @@
       <repeatable>true</repeatable>
       <binding>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
-        <step>1</step>
-        <min>0</min>
-        <max>360</max>
-        <wrap>1</wrap>
-      </binding>
-      <binding>
-        <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>1</step>
         <min>0</min>
         <max>360</max>
@@ -745,10 +901,10 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/offset-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
@@ -756,14 +912,30 @@
       </binding>
       <binding>
         <condition>
-          <property>/devices/status/keyboard/shift</property>
+          <property>devices/status/keyboard/shift</property>
         </condition>
         <command>property-adjust</command>
-        <property>/instrumentation/heading-indicator/align-deg</property>
+        <property>instrumentation/heading-indicator/align-deg</property>
         <step>4</step>
         <min>0</min>
         <max>360</max>
         <wrap>1</wrap>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script><![CDATA[
+            # Cage gyro when moving
+            var oldSetting = getprop("instrumentation/heading-indicator/caged-flag");
+            if (!oldSetting) {
+              setprop("instrumentation/heading-indicator/caged-flag", 1);
+              
+              var rotateAction = maketimer(1.0, func {
+                  setprop("instrumentation/heading-indicator/caged-flag", 0);
+              });
+              rotateAction.singleShot = 1;
+              rotateAction.start();
+            }
+        ]]></script>
       </binding>
       <binding>
         <command>nasal</command>
@@ -774,9 +946,19 @@
       <binding>
         <command>set-tooltip</command>
         <tooltip-id>heading-offset</tooltip-id>
-        <label>Heading: %3.0f</label>
+        <label>%s</label>
         <property>instrumentation/heading-indicator/indicated-heading-deg</property>
-        <mapping>heading</mapping>
+        <mapping>nasal</mapping>
+        <script>
+          var heading = getprop("instrumentation/heading-indicator/indicated-heading-deg");
+          heading = math.round(heading);
+          if (heading == 0) heading = 360;
+          var returnString = "Heading: " ~ sprintf("%3d", heading);
+          if (getprop("instrumentation/heading-indicator/caged-flag")) {
+              returnString = returnString ~ "\n(caged)";
+          }
+          return returnString;
+        </script>
       </binding>
     </hovered>
   </animation>

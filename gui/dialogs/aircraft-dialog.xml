@@ -20,6 +20,15 @@
     <modal>false</modal>
     <draggable>true</draggable>
 
+    <nasal>
+        <open><![CDATA[
+            # Ensure latitude nut has a value
+            var latnutprop = "/instrumentation/heading-indicator/latitude-nut-setting";
+            if (!getprop(latnutprop))
+                setprop(latnutprop, 0);
+        ]]></open>
+    </nasal>
+
 
     <group>
         <layout>hbox</layout>
@@ -31,42 +40,162 @@
         <empty><stretch>true</stretch></empty>
 
         <button>
-            <legend/>
+            <legend>X</legend>
             <key>Esc</key>
-            <pref-width>16</pref-width>
-            <pref-height>16</pref-height>
-            <binding>
-                <command>dialog-close</command>
-            </binding>
-	</button>
-	</group>
-	<hrule/>
-    
-    <group>
-        <layout>hbox</layout>
-
-        <text>
-            <label>Transponder factory VFR code:</label>
-            <halign>left</halign>
-        </text>
-
-        <input>
-            <halign>left</halign>
-            <property>/instrumentation/transponder/factory-vfr-code</property>
-            <type>INT</type>
-            <width>4</width>
-        </input>
-        <button>
-            <legend>Apply</legend>
-            <equal>true</equal>
-            <default>false</default>
-            <binding>
-                <command>dialog-apply</command>
-            </binding>
+            <halign>right</halign>
+            <pref-width>20</pref-width>
+            <pref-height>20</pref-height>
             <binding>
                 <command>dialog-close</command>
             </binding>
         </button>
+	</group>
+	<hrule/>
+    
+    
+    <text>
+        <label>Factory settings:</label>
+        <halign>left</halign>
+    </text>
+    
+    <group>
+        <layout>hbox</layout>
+        <halign>left</halign>
+        <!-- Small left padding -->
+        <group>
+            <layout>vbox</layout>
+
+            <padding>6</padding>
+        </group>
+    
+        <group>
+            <layout>table</layout>
+            <halign>left</halign>
+            <valign>top</valign>
+
+            <text>
+                <label>Transponder factory VFR code:</label>
+                <halign>left</halign>
+                <row>0</row>
+                <col>0</col>
+            </text>
+            <input>
+                <halign>left</halign>
+                <property>/instrumentation/transponder/factory-vfr-code</property>
+                <type>INT</type>
+                <width>4</width>
+                <row>0</row>
+                <col>1</col>
+            </input>
+            <button>
+                <legend>Apply</legend>
+                <halign>left</halign>
+                <row>0</row>
+                <col>2</col>
+                <equal>true</equal>
+                <default>false</default>
+                <binding>
+                    <command>dialog-apply</command>
+                </binding>
+                <binding>
+                    <command>dialog-close</command>
+                </binding>
+            </button>
+            
+            <text>
+                <label>Wing incidence:</label>
+                <halign>left</halign>
+                <row>1</row>
+                <col>0</col>
+            </text>
+            <input>
+                <halign>left</halign>
+                <row>1</row>
+                <col>1</col>
+                <property>/controls/flight/aileron-trim</property>
+            </input>
+            <group>
+                <layout>hbox</layout>
+                <halign>left</halign>
+                <row>1</row>
+                <col>2</col>
+                <button>
+                    <legend>Apply</legend>
+                    <halign>left</halign>
+                    <equal>true</equal>
+                    <default>false</default>
+                    <binding>
+                        <command>dialog-apply</command>
+                    </binding>
+                    <binding>
+                        <command>dialog-close</command>
+                    </binding>
+                </button>
+                <button>
+                    <legend>Reset</legend>
+                    <equal>true</equal>
+                    <default>false</default>
+                    <binding>
+                        <command>property-assign</command>
+                        <property>/controls/flight/aileron-trim</property>
+                        <value>0.0135</value>
+                    </binding>
+                    <binding>
+                        <command>dialog-update</command>
+                    </binding>
+                </button>
+            </group>
+            
+            <text>
+                <label>HI/DG Latitude Nut setting:</label>
+                <halign>left</halign>
+                <row>2</row>
+                <col>0</col>
+                <visible>
+            <equals>
+                <property>/sim/aircraft</property>
+                <value>c182s</value> 
+            </equals>
+            </visible>
+            </text>
+            <input>
+                <name>latitude-nut-setting</name>
+                <halign>left</halign>
+                <row>2</row>
+                <col>1</col>
+                <property>/instrumentation/heading-indicator/latitude-nut-setting</property>
+                <type>INT</type>
+                <width>2</width>
+                <visible>
+            <equals>
+                <property>/sim/aircraft</property>
+                <value>c182s</value> 
+            </equals>
+            </visible>
+            </input>
+            <button>
+                <legend>Apply</legend>
+                <halign>left</halign>
+                <equal>true</equal>
+                <default>false</default>
+                <row>2</row>
+                <col>2</col>
+                <visible>
+                    <equals>
+                        <property>/sim/aircraft</property>
+                        <value>c182s</value> 
+                    </equals>
+                </visible>
+                <binding>
+                    <command>dialog-apply</command>
+                    <object-name>latitude-nut-setting</object-name>
+                </binding>
+                <binding>
+                    <command>dialog-close</command>
+                </binding>
+            </button>
+
+        </group>
     </group>
     
     <hrule/>
@@ -231,9 +360,53 @@
                 
                 <empty><stretch>true</stretch></empty> <!-- force group to the left -->
             </group>
-            
+
+            <group>
+                <layout>hbox</layout>
+                <!-- Small left padding -->
+                <group>
+                    <layout>vbox</layout>
+                    <padding>6</padding>
+                </group>
+                
+                <group>
+                    <layout>hbox</layout>
+                    <checkbox>
+                        <halign>left</halign>
+                        <label>  Allow starter cycle limits</label>
+                        <property>/engines/engine/starter-management</property>
+                        <live>true</live>
+                        <enable>
+                            <and>
+                                <property>/engines/engine/complex-engine-procedures</property>
+                            </and>
+                        </enable>
+                        <binding>
+                            <command>dialog-apply</command>
+                        </binding>
+                    </checkbox>
+                </group>
+                
+                <empty><stretch>true</stretch></empty> <!-- force group to the left -->
+            </group>
             
         </group>
+        
+        <checkbox>
+            <halign>left</halign>
+            <label>Realistic Instruments</label>
+            <property>/sim/realism/instruments/realistic-instruments</property>
+            <live>true</live>
+            <binding>
+                <command>property-toggle</command>
+                <property>/sim/realism/instruments/realistic-instruments</property>
+            </binding>
+            <binding>
+                <command>dialog-update</command><!-- makes sure that command is still there when dialog is closed-->
+            </binding>
+        </checkbox>
+        
+        <hrule/>
         
         <checkbox>
             <halign>left</halign>
@@ -318,6 +491,16 @@
                     <command>dialog-close</command>
                 </binding>
             </button>
+            <button>
+                <legend>Configure humans</legend>
+                <binding>
+                    <command>dialog-show</command>
+                    <dialog-name type="string">c182s-pax-dialog</dialog-name>
+                </binding>
+                <binding>
+                    <command>dialog-close</command>
+                </binding>
+            </button>
         </group>
         
 <hrule/>
@@ -394,34 +577,10 @@
                     </and>
                 </enable>
                 <binding>
-  <command>property-assign</command>
-  <property>/fdm/jsbsim/ice/wing</property>
-  <value>0</value>
-                </binding>
-                <binding>
-  <command>property-assign</command>
-  <property>/fdm/jsbsim/ice/stabilizer</property>
-  <value>0</value>
-                </binding>
-                <binding>
-  <command>property-assign</command>
-  <property>/fdm/jsbsim/ice/propeller</property>
-  <value>0</value>
-                </binding>
-                    <binding>
-  <command>property-assign</command>
-  <property>/fdm/jsbsim/ice/fuselage</property>
-  <value>0</value>
-                </binding>
-                <binding>
-  <command>property-assign</command>
-  <property>/fdm/jsbsim/ice/windshield</property>
-  <value>0</value>
-                </binding>
-                <binding>
-                    <command>property-assign</command>
-                    <property>/systems/static[0]/icing</property>
-                    <value>0</value>
+                    <command>nasal</command>
+                    <script>
+                        c182s.cleanAircraft();
+                    </script>
                 </binding>
             </button>
         </group>
@@ -500,14 +659,14 @@
 
             <checkbox>
                 <halign>left</halign>
-                <label>Show shadow</label>
-                <property>/sim/rendering/shadow-volume</property>
+                <label>Split master switches operation</label>
+                <property>/sim/model/split-master-switches</property>
                 <live>true</live>
                 <binding>
-                    <command>property-toggle</command>
-                    <property>/sim/rendering/shadow-volume</property>
+                    <command>dialog-apply</command>
                 </binding>
             </checkbox>
+
         </group>	
 	
         <hrule/>

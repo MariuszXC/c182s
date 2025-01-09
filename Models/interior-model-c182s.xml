@@ -92,14 +92,10 @@
     <object-name>Breaker.ADF</object-name>
     <object-name>Breaker.AutoPilot</object-name>
     <object-name>CowlFlapsLever</object-name>
-   </effect>
-
-   <effect>
-      <inherits-from>Aircraft/c182s/Models/Effects/c182s_flashlight</inherits-from>
-      <object-name>FlapSwitch</object-name>
-      <object-name>key</object-name>
-      <object-name>start</object-name>
-      <object-name>starter</object-name>
+    <object-name>FlapSwitch</object-name>
+    <object-name>key</object-name>
+    <object-name>start</object-name>
+    <object-name>starter</object-name>
    </effect>
    
 <effect>
@@ -297,13 +293,13 @@
         <property>sim/model/door-positions/DoorR/position-norm-effective</property>
         <condition>
             <equals>
-                <property>/sim/model/door-positions/DoorR/opened</property>
+                <property>sim/model/door-positions/DoorR/opened</property>
                 <value>0.0</value>
             </equals>
         </condition>
         <condition>
             <equals>
-                <property>/sim/model/door-positions/leftDoor/opened</property>
+                <property>sim/model/door-positions/leftDoor/opened</property>
                 <value>0.0</value>
             </equals>
         </condition>
@@ -461,7 +457,7 @@
         <property>sim/model/door-positions/DoorL/position-norm-effective</property>
         <condition>
             <equals>
-                <property>/sim/model/door-positions/DoorL/opened</property>
+                <property>sim/model/door-positions/DoorL/opened</property>
                 <value>0.0</value>
             </equals>
         </condition>
@@ -716,8 +712,16 @@
     <animation>
         <type>translate</type>
         <object-name>ParkingBrake</object-name>
-        <property>sim/model/c182s/cockpit/brake-lever</property>
-        <factor>0.04</factor>
+        <expression>
+            <table>
+                <property>sim/model/c182s/cockpit/brake-lever</property>
+                <entry> <ind>0.00</ind> <dep>0.00</dep> </entry>
+                <entry> <ind>0.20</ind> <dep>0.02</dep> </entry>
+                <entry> <ind>0.40</ind> <dep>0.03</dep> </entry>
+                <entry> <ind>0.60</ind> <dep>0.035</dep> </entry>
+                <entry> <ind>0.70</ind> <dep>0.04</dep> </entry>
+            </table>
+        </expression>
         <axis>
             <x>1.0</x>
             <y>0.0</y>
@@ -727,8 +731,13 @@
     <animation>
         <type>rotate</type>
         <object-name>ParkingBrake</object-name>
-        <property>sim/model/c182s/cockpit/brake-lever</property>
-        <factor>90</factor>
+        <expression>
+            <table>
+                <property>sim/model/c182s/cockpit/brake-lever</property>
+                <entry> <ind>0.85</ind> <dep>0.0</dep> </entry>
+                <entry> <ind>1.0</ind> <dep>90</dep> </entry>
+            </table>
+        </expression>
         <axis>
             <x>1.0</x>
             <y>0.0</y>
@@ -897,11 +906,26 @@
         <visible>true</visible>
         <drag-direction>vertical</drag-direction>
         <!-- no translation, we handle that seperately -->
+        <shift-repeat>2</shift-repeat>
         <action>
             <binding>
+                <condition>
+                    <not><property>devices/status/keyboard/alt</property></not>
+                </condition>
                 <command>property-adjust</command>
-                <property>/controls/engines/engine[0]/throttle</property>
+                <property>controls/engines/engine[0]/throttle</property>
                 <factor>0.05</factor>
+                <min>0</min>
+                <max>1</max>
+                <wrap>0</wrap>
+            </binding>
+            <binding>
+                <condition>
+                    <property>devices/status/keyboard/alt</property>
+                </condition>
+                <command>property-adjust</command>
+                <property>controls/engines/engine[0]/throttle</property>
+                <factor>0.01</factor>
                 <min>0</min>
                 <max>1</max>
                 <wrap>0</wrap>
@@ -914,7 +938,7 @@
                 <measure-text>Throttle: 100%</measure-text>
                 <tooltip-id>throttle</tooltip-id>
                 <mapping>percent</mapping>
-                <property>/controls/engines/engine[0]/throttle</property>
+                <property>controls/engines/engine[0]/throttle</property>
             </binding>
         </hovered>
     </animation>
@@ -936,11 +960,26 @@
         <visible>true</visible>
         <drag-direction>vertical</drag-direction>
         <!-- no translation, we handle that seperately -->
+        <shift-repeat>2</shift-repeat>
         <action>
             <binding>
+                <condition>
+                    <not><property>devices/status/keyboard/alt</property></not>
+                </condition>
                 <command>property-adjust</command>
-                <property>/controls/engines/engine[0]/mixture</property>
+                <property>controls/engines/engine[0]/mixture</property>
                 <factor>0.05</factor>
+                <min>0</min>
+                <max>1</max>
+                <wrap>0</wrap>
+            </binding>
+            <binding>
+                <condition>
+                    <property>devices/status/keyboard/alt</property>
+                </condition>
+                <command>property-adjust</command>
+                <property>controls/engines/engine[0]/mixture</property>
+                <factor>0.01</factor>
                 <min>0</min>
                 <max>1</max>
                 <wrap>0</wrap>
@@ -953,7 +992,7 @@
                 <measure-text>Mixture: 100%</measure-text>
                 <tooltip-id>Mixture</tooltip-id>
                 <mapping>percent</mapping>
-                <property>/controls/engines/engine[0]/mixture</property>
+                <property>controls/engines/engine[0]/mixture</property>
             </binding>
         </hovered>
     </animation>
@@ -975,11 +1014,26 @@
         <visible>true</visible>
         <drag-direction>vertical</drag-direction>
         <!-- no translation, we handle that seperately -->
+        <shift-repeat>2</shift-repeat>
         <action>
             <binding>
+                <condition>
+                    <not><property>devices/status/keyboard/alt</property></not>
+                </condition>
                 <command>property-adjust</command>
-                <property>/controls/engines/engine[0]/propeller-pitch</property>
+                <property>controls/engines/engine[0]/propeller-pitch</property>
                 <factor>0.05</factor>
+                <min>0</min>
+                <max>1</max>
+                <wrap>0</wrap>
+            </binding>
+            <binding>
+                <condition>
+                    <property>devices/status/keyboard/alt</property>
+                </condition>
+                <command>property-adjust</command>
+                <property>controls/engines/engine[0]/propeller-pitch</property>
+                <factor>0.01</factor>
                 <min>0</min>
                 <max>1</max>
                 <wrap>0</wrap>
@@ -992,7 +1046,7 @@
                 <measure-text>Propeller Pitch: 100%</measure-text>
                 <tooltip-id>Propeller Pitch</tooltip-id>
                 <mapping>percent</mapping>
-                <property>/controls/engines/engine[0]/propeller-pitch</property>
+                <property>controls/engines/engine[0]/propeller-pitch</property>
             </binding>
         </hovered>
     </animation>
@@ -1037,7 +1091,7 @@
         <type>knob</type>
         <object-name>TrimElevator</object-name>
         <property>controls/flight/elevator-trim</property>
-        <factor>-360</factor>
+        <factor>-720</factor>
         <drag-direction>vertical</drag-direction>
         <axis>
             <x>0.0</x>
@@ -1051,9 +1105,23 @@
         </center>
         <action>
             <binding>
+                <condition>
+                    <not><property>devices/status/keyboard/alt</property></not>
+                </condition>
                 <command>property-adjust</command>
                 <property>controls/flight/elevator-trim</property>
-                <factor>0.01</factor>
+                <factor>0.001</factor>
+                <min>-1</min>
+                <max>1</max>
+                <wrap>0</wrap>
+            </binding>
+            <binding>
+                <condition>
+                    <property>devices/status/keyboard/alt</property>
+                </condition>
+                <command>property-adjust</command>
+                <property>controls/flight/elevator-trim</property>
+                <factor>0.0001</factor>
                 <min>-1</min>
                 <max>1</max>
                 <wrap>0</wrap>
@@ -1096,7 +1164,7 @@
         <type>knob</type>
         <object-name>RudderTrim</object-name>
         <property>controls/flight/rudder-trim</property>
-        <factor>-360</factor>
+        <factor>720</factor>
         <drag-direction>horizontal</drag-direction>
         <axis>
             <x>0.0</x>
@@ -1110,9 +1178,23 @@
         </center>
         <action>
             <binding>
+                <condition>
+                    <not><property>devices/status/keyboard/alt</property></not>
+                </condition>
                 <command>property-adjust</command>
                 <property>controls/flight/rudder-trim</property>
-                <factor>0.01</factor>
+                <factor>0.001</factor>
+                <min>-1</min>
+                <max>1</max>
+                <wrap>0</wrap>
+            </binding>
+            <binding>
+                <condition>
+                    <property>devices/status/keyboard/alt</property>
+                </condition>
+                <command>property-adjust</command>
+                <property>controls/flight/rudder-trim</property>
+                <factor>0.0001</factor>
                 <min>-1</min>
                 <max>1</max>
                 <wrap>0</wrap>
@@ -1626,7 +1708,7 @@
                 <command>set-tooltip</command>
                 <tooltip-id>cabinheat</tooltip-id>
                 <label>%s</label>
-                <property>/fdm/jsbsim/heat/cabin-temperature-change-text-update</property>
+                <property>fdm/jsbsim/heat/cabin-temperature-change-text-update</property>
                 <mapping>nasal</mapping>
                 <script>
                     <![CDATA[
@@ -1673,7 +1755,7 @@
                 <command>set-tooltip</command>
                 <tooltip-id>cabinair</tooltip-id>
                 <label>%s</label>
-                <property>/fdm/jsbsim/heat/cabin-temperature-change-text-update</property>
+                <property>fdm/jsbsim/heat/cabin-temperature-change-text-update</property>
                 <mapping>nasal</mapping>
                 <script>
                     <![CDATA[
@@ -1755,14 +1837,41 @@
                 <command>nasal</command>
                 <script>c182s.click("master")</script>
             </binding>
+            <binding>
+                <condition>
+                    <or>
+                        <and>
+                            <not><property>sim/model/split-master-switches</property></not>
+                            <not><property>devices/status/keyboard/shift</property></not>
+                        </and>
+                        <and>
+                            <property>sim/model/split-master-switches</property>
+                            <property>devices/status/keyboard/shift</property>
+                        </and>
+                    </or>
+                </condition>
+                <command>property-assign</command>
+                <property>controls/engines/engine/master-bat</property>
+                <property>controls/engines/engine/master-alt</property>
+            </binding>
         </action>
         <hovered>
-            <binding>
+           <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Master-Alt-switch</tooltip-id>
                 <label>Alternator: %s</label>
-                <mapping>on-off</mapping>
                 <property>controls/engines/engine/master-alt</property>
+                <mapping>nasal</mapping>
+                <script>
+                    <![CDATA[
+                    var setting     = getprop("controls/engines/engine/master-alt");
+                    var setting_txt = "OFF";  if (setting) setting_txt = "ON";
+                    var ret_str     = setting_txt;
+                    if (getprop("sim/model/split-master-switches"))  ret_str ~= "\n(shift-click for both switches)";
+                    if (!getprop("sim/model/split-master-switches")) ret_str ~= "\n(shift-click for single switch)";
+                    return ret_str;
+                    ]]>
+                </script>
             </binding>
         </hovered>
     </animation>
@@ -1783,14 +1892,41 @@
                 <command>nasal</command>
                 <script>c182s.click("master")</script>
             </binding>
+            <binding>
+                <condition>
+                    <or>
+                        <and>
+                            <not><property>sim/model/split-master-switches</property></not>
+                            <not><property>devices/status/keyboard/shift</property></not>
+                        </and>
+                        <and>
+                            <property>sim/model/split-master-switches</property>
+                            <property>devices/status/keyboard/shift</property>
+                        </and>
+                    </or>
+                </condition>
+                <command>property-assign</command>
+                <property>controls/engines/engine/master-alt</property>
+                <property>controls/engines/engine/master-bat</property>
+            </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
-                <tooltip-id>Master-Batt-switch</tooltip-id>
+                <tooltip-id>Master-Bat-switch</tooltip-id>
                 <label>Battery: %s</label>
-                <mapping>on-off</mapping>
                 <property>controls/engines/engine/master-bat</property>
+                <mapping>nasal</mapping>
+                <script>
+                    <![CDATA[
+                    var setting     = getprop("controls/engines/engine/master-bat");
+                    var setting_txt = "OFF";  if (setting) setting_txt = "ON";
+                    var ret_str     = setting_txt;
+                    if (getprop("sim/model/split-master-switches"))  ret_str ~= "\n(shift-click for both switches)";
+                    if (!getprop("sim/model/split-master-switches")) ret_str ~= "\n(shift-click for single switch)";
+                    return ret_str;
+                    ]]>
+                </script>
             </binding>
         </hovered>
     </animation>
@@ -2189,14 +2325,41 @@
                 <command>nasal</command>
                 <script>c182s.click("avionics")</script>
             </binding>
+            <binding>
+                <condition>
+                    <or>
+                        <and>
+                            <not><property>sim/model/split-master-switches</property></not>
+                            <not><property>devices/status/keyboard/shift</property></not>
+                        </and>
+                        <and>
+                            <property>sim/model/split-master-switches</property>
+                            <property>devices/status/keyboard/shift</property>
+                        </and>
+                    </or>
+                </condition>
+                <command>property-assign</command>
+                <property>controls/switches/AVMBus2</property>
+                <property>controls/switches/AVMBus1</property>
+            </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Avionics Master-Switch Bus1</tooltip-id>
                 <label>Avionics Master 1: %s</label>
-                <mapping>on-off</mapping>
                 <property>controls/switches/AVMBus1</property>
+                <mapping>nasal</mapping>
+                <script>
+                    <![CDATA[
+                    var setting     = getprop("controls/switches/AVMBus1");
+                    var setting_txt = "OFF";  if (setting) setting_txt = "ON";
+                    var ret_str     = setting_txt;
+                    if (getprop("sim/model/split-master-switches"))  ret_str ~= "\n(shift-click for both switches)";
+                    if (!getprop("sim/model/split-master-switches")) ret_str ~= "\n(shift-click for single switch)";
+                    return ret_str;
+                    ]]>
+                </script>
             </binding>
         </hovered>
     </animation>
@@ -2216,14 +2379,41 @@
                 <command>nasal</command>
                 <script>c182s.click("avionics")</script>
             </binding>
+            <binding>
+                <condition>
+                    <or>
+                        <and>
+                            <not><property>sim/model/split-master-switches</property></not>
+                            <not><property>devices/status/keyboard/shift</property></not>
+                        </and>
+                        <and>
+                            <property>sim/model/split-master-switches</property>
+                            <property>devices/status/keyboard/shift</property>
+                        </and>
+                    </or>
+                </condition>
+                <command>property-assign</command>
+                <property>controls/switches/AVMBus1</property>
+                <property>controls/switches/AVMBus2</property>
+            </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Avionics Master-Switch Bus2</tooltip-id>
                 <label>Avionics Master 2: %s</label>
-                <mapping>on-off</mapping>
                 <property>controls/switches/AVMBus2</property>
+                <mapping>nasal</mapping>
+                <script>
+                    <![CDATA[
+                    var setting     = getprop("controls/switches/AVMBus2");
+                    var setting_txt = "OFF";  if (setting) setting_txt = "ON";
+                    var ret_str     = setting_txt;
+                    if (getprop("sim/model/split-master-switches"))  ret_str ~= "\n(shift-click for both switches)";
+                    if (!getprop("sim/model/split-master-switches")) ret_str ~= "\n(shift-click for single switch)";
+                    return ret_str;
+                    ]]>
+                </script>
             </binding>
         </hovered>
     </animation>
@@ -2565,7 +2755,7 @@
         <action>
             <binding>
                 <command>property-adjust</command>
-                <property>/controls/switches/magnetos</property>
+                <property>controls/switches/magnetos</property>
                 <factor>1</factor>
                 <min>0</min>
                 <max>3</max>
@@ -2588,7 +2778,7 @@
                 <command>set-tooltip</command>
                 <tooltip-id>magneto-switch</tooltip-id>
                 <label>Magnetos: %s</label>
-                <property>/controls/switches/magnetos</property>
+                <property>controls/switches/magnetos</property>
                 <mapping>nasal</mapping>
                 <script>
                     var m = arg[0];
@@ -2605,7 +2795,7 @@
 <animation>
         <type>knob</type>
         <object-name>FuelTankSelector</object-name>
-        <property>controls/switches/fuel_tank_selector</property>
+        <property>controls/switches/fuel_tank_selector</property> <!-- 0=off, 1=right, 2=both, 3=left; -1 and 4 are for interpolation and be clamped to 0/3 after the animation -->
         <visible>true</visible>
         <factor>90</factor>
         <offset-deg>90</offset-deg>
@@ -2630,14 +2820,15 @@
                 <condition> <not><property>sim/model/c182s/cockpit/fuel_tank_selector-z</property></not> </condition>
                 <command>property-adjust</command>
                 <property>controls/switches/fuel_tank_selector_tgt</property>
-                <wrap>true</wrap>
-                <min>0</min>
-                <max>4</max> <!-- 0=off, 1=right, 2=both, 3=left -->
+                <factor>-1</factor>
             </binding>
             <binding>
                 <condition> <not><property>sim/model/c182s/cockpit/fuel_tank_selector-z</property></not> </condition>
                 <command>nasal</command>
                 <script><![CDATA[
+                    var fsp     = "controls/switches/fuel_tank_selector";
+                    var fsp_tgt = "controls/switches/fuel_tank_selector_tgt";
+                    
                     # Push selector down, then rotate and release the push
                     var pushTime = 0.2;
                     interpolate(
@@ -2647,10 +2838,7 @@
                     
                     var rotateTime = 0.5;
                     var rotateAction = maketimer(pushTime, func {
-                        interpolate(
-                            "controls/switches/fuel_tank_selector",
-                            getprop("controls/switches/fuel_tank_selector_tgt"),
-                        rotateTime);
+                        interpolate(fsp, getprop(fsp_tgt), rotateTime);
                     });
                     rotateAction.singleShot = 1;
                     rotateAction.start();
@@ -2664,6 +2852,14 @@
                     });
                     releaseAction.singleShot = 1;
                     releaseAction.start();
+                    
+                    var cleanupTime = 0.1;
+                    var cleanupAction = maketimer(pushTime+rotateTime+releaseTime, func {
+                        if (getprop(fsp) < 0) setprop(fsp, 3);
+                        if (getprop(fsp) > 3) setprop(fsp, 0);
+                    });
+                    cleanupAction.singleShot = 1;
+                    cleanupAction.start();
                 ]]></script>
             </binding>
         </action>
@@ -3833,7 +4029,7 @@
     <animation>
         <type>translate</type>
         <object-name>FrontSeat.L</object-name>
-        <property>/sim/model/c182s/cockpit/FrontSeatL-setting-m</property>
+        <property>sim/model/c182s/cockpit/FrontSeatL-setting-m</property>
         <factor>1</factor>
         <axis>
             <x>1.0</x>
@@ -3848,7 +4044,7 @@
         <drag-direction>vertical</drag-direction>
         <condition>
             <equals>
-                <property>/sim/current-view/view-number</property>
+                <property>sim/current-view/view-number</property>
                 <value>0</value>
             </equals>
         </condition>
@@ -3868,7 +4064,7 @@
             <binding>
                 <command>set-tooltip</command>
                 <label>Seat position: %s</label>
-                <tooltip-id>throttle</tooltip-id>
+                <tooltip-id>pilotSeatpos_tt</tooltip-id>
                 <property>sim/model/c182s/cockpit/FrontSeatL-setting-m</property>
                 <mapping>nasal</mapping>
                 <script><![CDATA[

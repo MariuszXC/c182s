@@ -61,10 +61,15 @@
             </item>
             
             <item>
+                <!-- TODO: can be removed, once the walker flashlight is merged into fgdata;
+                           see https://sourceforge.net/p/flightgear/codetickets/2853/ -->
                 <label>Flashlight</label>
                 <binding>
-                    <command>nasal</command>
-                    <script>c182s.toggle_flashlight()</script>
+                    <command>property-cycle</command>
+                    <property>/sim/walker/flashlight/mode</property>
+                    <value type="int">0</value> <!-- off -->
+                    <value type="int">1</value> <!-- white -->
+                    <value type="int">2</value> <!-- red -->
                 </binding>
             </item>
 
@@ -75,6 +80,15 @@
                     <dialog-name>fuelmgmt-dialog</dialog-name>
                 </binding>
             </item>
+            
+            <item>
+                <label>Aircraft Failure Management</label>
+                <binding>
+                    <command>dialog-show</command>
+                    <dialog-name>extended-failure-dialog-c182</dialog-name>
+                </binding>
+            </item>
+            
 
             <item n="150">
                 <label>------------------</label>

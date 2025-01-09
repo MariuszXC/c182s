@@ -61,7 +61,7 @@
             <tag>ifr</tag>
             <tag>high-wing</tag>
         </tags>
-    <minimum-fg-version>2017.3.1</minimum-fg-version>
+    <minimum-fg-version>2020.4.0</minimum-fg-version>
     <rating>
       <FDM type="int">5</FDM>
       <systems type="int">3</systems>
@@ -223,11 +223,16 @@
   </gpu>
 
   <rendering>
-    <!-- Enable the ALS shadow volume by default -->
     <pilot-model>
       <available>true</available>
     </pilot-model>
   </rendering>
+
+  <realism>
+    <instruments>
+      <realistic-instruments type="bool">false</realistic-instruments>
+    </instruments>
+  </realism>
 
 <instrumentation n="0">
     <path>Aircraft/c182s/Systems/instrumentation.xml</path>
@@ -295,6 +300,7 @@
    <fallback-model-index>3</fallback-model-index>
    <hide-yoke type="bool">false</hide-yoke>
    <hide-yoke-alpha-cmd>0.25</hide-yoke-alpha-cmd>
+   <split-master-switches type="bool">false</split-master-switches>
 
     <icing>
        <iceable>
@@ -384,6 +390,7 @@
                     <tiedownT-visible type="bool">false</tiedownT-visible>
                     <windGustLockPlate-visible type="bool">false</windGustLockPlate-visible>
                     <pitot-cover-visible type="bool">false</pitot-cover-visible>
+                    <plane-cover-visible type="bool">false</plane-cover-visible>
 </securing>
 
 <procedural-lights type="bool">true</procedural-lights>
@@ -430,6 +437,8 @@
           <aircraft-mod-enabled type="bool">false</aircraft-mod-enabled>
       </parachuters>
         
+      <cleaning type="bool">false</cleaning>
+
     </c182s>
 
     <rendering>
@@ -751,6 +760,10 @@
     <desc>Cowl flaps close/open</desc>
    </key>
    <key>
+    <name>CTRL+F</name>
+    <desc>Toggle Flashlight</desc>
+   </key>
+   <key>
     <name>y/Y</name>
     <desc>Toggle yoke visibility</desc>
    </key>
@@ -783,13 +796,6 @@
         <menubar include="gui/dialogs/c182s-menu.xml">
           <default n="0">
             <menu n="10">
-              <item n="97">
-                <label>Aircraft Failure Management</label>
-                <binding>
-                    <command>dialog-show</command>
-                    <dialog-name>extended-failure-dialog-c182t</dialog-name>
-                </binding>
-              </item>
               <item n="98">
                 <label>Display PFD</label>
                 <binding>
@@ -867,6 +873,7 @@
             <path>/engines/engine/allow-fuel-contamination</path>
             <path>/engines/engine/allow-oil-management</path>
             <path>/engines/engine/allow-sparkplug-icing</path>
+            <path>/engines/engine/starter-management</path>
             <path>/engines/engine/winter-kit-installed</path>
 
             <path>/fdm/jsbsim/settings/damage</path>
@@ -908,6 +915,7 @@
             <path>/controls/switches/kn-62a</path>
             <path>/controls/switches/fuel_tank_selector</path>
             <path>/controls/engines/engine/cowl-flaps-norm</path>
+            <path>/controls/flight/aileron-trim</path>
             <path>/controls/flight/elevator-trim</path>
             <path>/controls/flight/rudder-trim</path>
             <path>/controls/flight/flaps</path>
@@ -976,8 +984,12 @@
             <path>/instrumentation/attitude-indicator/caged-flag</path>
             <path>/instrumentation/attitude-indicator/horizon-offset-deg</path>
             <path>/instrumentation/airspeed-indicator/tas-face-rotation</path>
-            <path>/instrumentation/heading-indicator/offset-deg</path>
             <path>/instrumentation/heading-indicator/align-deg</path>
+            <path>/instrumentation/heading-indicator/error-deg</path>
+            <path>/instrumentation/heading-indicator/offset-deg-save</path>
+            <path>/instrumentation/heading-indicator/caged-flag</path>
+            <path>/instrumentation/heading-indicator/latitude-nut-setting</path>
+            <path>/sim/realism/instruments/realistic-instruments</path>
             <path>/autopilot/settings/heading-bug-deg</path>
             <path>/instrumentation/transponder/id-code</path>
             <path>/instrumentation/transponder/factory-vfr-code</path>
@@ -1002,6 +1014,8 @@
             <path>/controls/lighting/avionics-lights-norm</path>
             <path>/controls/lighting/radio-lights-norm</path>
             <path>/systems/electrical/battery-charge-percent</path>
+            <path>/systems/electrical/battery-sby-charge-percent</path>
+            <path>/controls/switches/battery-sby</path>
 
             <path>/fdm/jsbsim/inertia/pointmass-weight-lbs[0]</path>
             <path>/fdm/jsbsim/inertia/pointmass-weight-lbs[1]</path>
@@ -1017,6 +1031,7 @@
             <path>/sim/chocks001/enable</path>
             <path>/sim/chocks002/enable</path>
             <path>/sim/chocks003/enable</path>
+            <path>/sim/model/c182s/securing/plane-cover-visible</path>
             <!--<path>/sim/coneR/enable</path> todo did not work -->
             <!--<path>/sim/coneL/enable</path> todo did not work -->
             <path>/sim/model/c182s/nw_fairing</path>
@@ -1061,6 +1076,28 @@
             <path>/sim/failure-manager/display-on-screen</path>
             <path>/sim/failure-manager/restore-on-start</path>
             <path>/sim/model/hide-yoke-alpha-cmd</path>
+            <path>/sim/model/split-master-switches</path>
+            
+            <path>/sim/model/crew/pilot[0]/gender</path>
+            <path>/sim/model/crew/pilot[0]/eyewear</path>
+            <path>/sim/model/crew/pilot[0]/headgear</path>
+            <path>/sim/model/crew/pilot[0]/hair</path>
+            <path>/sim/model/crew/pilot[0]/outfit</path>
+            <path>/sim/model/crew/pilot[1]/gender</path>
+            <path>/sim/model/crew/pilot[1]/eyewear</path>
+            <path>/sim/model/crew/pilot[1]/headgear</path>
+            <path>/sim/model/crew/pilot[1]/hair</path>
+            <path>/sim/model/crew/pilot[1]/outfit</path>
+            <path>/sim/model/pax/pax[0]/gender</path>
+            <path>/sim/model/pax/pax[0]/eyewear</path>
+            <path>/sim/model/pax/pax[0]/headgear</path>
+            <path>/sim/model/pax/pax[0]/hair</path>
+            <path>/sim/model/pax/pax[0]/outfit</path>
+            <path>/sim/model/pax/pax[1]/gender</path>
+            <path>/sim/model/pax/pax[1]/eyewear</path>
+            <path>/sim/model/pax/pax[1]/headgear</path>
+            <path>/sim/model/pax/pax[1]/hair</path>
+            <path>/sim/model/pax/pax[1]/outfit</path>
         </aircraft-data>
 
         <flight-recorder include="Systems/flight-recorder/flight-recorder.xml"/>
@@ -1135,7 +1172,7 @@
 
  <controls>
   <flight>
-   <aileron-trim type="double">0.00</aileron-trim>
+   <aileron-trim type="double">0.0135</aileron-trim> <!-- Calibrated to 130KIAs/2200RPM. Note: C182 has no aileron trim. Instead, this is achieved factory-sided by incidence of the wings -->
    <rudder-trim type="double">0.0</rudder-trim>
   </flight>
 <gear>
@@ -1166,6 +1203,7 @@
   <switches>
    <AVMBus1 type="bool">true</AVMBus1>
    <AVMBus2 type="bool">true</AVMBus2>
+   <battery-sby type="int">0</battery-sby>
    <starter type="bool">false</starter>
    <kt-76c type="double">0</kt-76c>
    <kn-62a type="double">0</kn-62a>
@@ -1212,6 +1250,7 @@
    <allow-fuel-contamination type="bool">false</allow-fuel-contamination>
    <allow-oil-management type="bool">false</allow-oil-management>
    <allow-sparkplug-icing type="bool">false</allow-sparkplug-icing>
+   <starter-management type="bool">false</starter-management>
    <winter-kit-installed type="bool">false</winter-kit-installed>
    <oil-grade>15W-50</oil-grade>
    <oil-temperature-env-diff type="double">0</oil-temperature-env-diff>
@@ -1234,6 +1273,9 @@
    <governor>
         <serviceable type="bool">true</serviceable>
     </governor>
+    <starter>
+      <serviceable type="bool">true</serviceable>
+    </starter>
     <manual-roughness-factor type="double">0</manual-roughness-factor>
     <manual-power-reduction-pct type="double">0</manual-power-reduction-pct>
     
@@ -1358,7 +1400,6 @@
     <file>Aircraft/c182s/Nasal/immat.nas</file>
     <file>Aircraft/c182s/Nasal/gma340.nas</file>
     <file>Aircraft/c182s/Nasal/c182s-states.nas</file>
-    <file>Aircraft/c182s/Nasal/flashlight.nas</file>
     <!-- implemented in FG1000: <file>Aircraft/c182s/Nasal/annunciator_panel.nas</file>-->
     <file>Aircraft/c182s/Nasal/damage.nas</file>
     <file>Aircraft/c182s/Nasal/c182t.nas</file>
@@ -1413,6 +1454,17 @@
      </ice>
    </jsbsim>
  </fdm>
+
+  <systems>
+    <electrical>
+      <avionics-fan n="0">
+        <execute type="bool">true</execute>
+      </avionics-fan>
+      <avionics-fan n="1">
+        <execute type="bool">true</execute>
+      </avionics-fan>
+    </electrical>
+  </systems>
 
 
  <!-- ================ map keyboard ================ -->

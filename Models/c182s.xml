@@ -24,6 +24,11 @@
   </model>
 
   <model>
+    <name>Cover</name>
+    <path>Exterior/cover/cover.xml</path>
+  </model>
+
+  <model>
     <name>ControlLock</name>
     <path>control-lock/control-lock.xml</path>
   </model>
@@ -257,6 +262,9 @@
    ]]></load>
 </nasal>
 
+<!-- Multiplayer Sound -->
+<sound><path>Aircraft/c182s/c182-sound-multiplayer.xml</path></sound>
+
 <!-- Engine smoke -->
 <model>
   <path>Aircraft/c182s/Models/Effects/c182_enginesmoke.xml</path>
@@ -396,11 +404,6 @@
         <inherits-from>Aircraft/c182s/Models/Effects/c182sreflectglas_interior_right_side</inherits-from>
         <object-name>Window.R.001</object-name>
     </effect>
-    
-<!-- ALS volume shadow  -->
-    <model>
-        <path>Effects/shadow.xml</path>
-    </model>
     
     <!-- Registration number -->
     <model>
@@ -1221,6 +1224,9 @@
      <button>0</button>
      <repeatable>false</repeatable>
      <binding>
+        <condition>
+          <not><property>sim/model/c182s/securing/plane-cover-visible</property></not>
+        </condition>
         <command>nasal</command>
         <script>c182s.DoorL.toggle();</script>
      </binding>
@@ -1280,6 +1286,9 @@
      <button>0</button>
      <repeatable>false</repeatable>
      <binding>
+        <condition>
+          <not><property>sim/model/c182s/securing/plane-cover-visible</property></not>
+        </condition>
         <command>nasal</command>
         <script>c182s.DoorR.toggle();</script>
      </binding>
@@ -1569,6 +1578,9 @@
             <button>0</button>
             <repeatable>false</repeatable>
             <binding>
+                <condition>
+                  <not><property>sim/model/c182s/securing/plane-cover-visible</property></not>
+                </condition>
                 <command>dialog-show</command>
                 <dialog-name>c182s-oilmanagement-dialog</dialog-name>
             </binding>
@@ -1591,13 +1603,13 @@
             <repeatable>false</repeatable>
             <binding>
                 <command>property-assign</command>
-                <property>/controls/stall-horn/test</property>
+                <property>controls/stall-horn/test</property>
                 <value>1</value>
             </binding>
             <mod-up>
                 <binding>
                     <command>property-assign</command>
-                    <property>/controls/stall-horn/test</property>
+                    <property>controls/stall-horn/test</property>
                     <value>0</value>
                 </binding>
             </mod-up>
@@ -1620,14 +1632,16 @@
      <repeatable>false</repeatable>
      <binding>
         <condition>
+          <and>
+            <not><property>sim/model/c182s/securing/plane-cover-visible</property></not>
             <or>
                 <equals>
-                    <property>/sim/model/door-positions/BaggageDoor/position-norm</property>
+                    <property>sim/model/door-positions/BaggageDoor/position-norm</property>
                     <value>1</value>
                 </equals>
                 <and>
                     <equals>
-                        <property>/sim/model/door-positions/BaggageDoor/position-norm</property>
+                        <property>sim/model/door-positions/BaggageDoor/position-norm</property>
                         <value>0</value>
                     </equals>
                     <less-than>
@@ -1636,16 +1650,20 @@
                     </less-than>
                 </and>
             </or>
+          </and>
         </condition>
         <command>nasal</command>
         <script>c182s.BaggageDoor.toggle();</script>
      </binding>
       <binding>
           <condition>
+            <and>
+              <not><property>sim/model/c182s/securing/plane-cover-visible</property></not>
               <equals>
-                  <property>/sim/model/door-positions/BaggageDoor/position-norm</property>
+                  <property>sim/model/door-positions/BaggageDoor/position-norm</property>
                   <value>0</value>
               </equals>
+            </and>
           </condition>
           <command>dialog-show</command>
           <dialog-name>c182s-baggage-weight-dialog</dialog-name>
@@ -1686,6 +1704,91 @@
 		</axis>
  </animation>
  
+<!-- Flashlight -->
+<light>
+  <name>c182_flashlight</name>
+  <type>spot</type>
+  <position>
+    <x-m>1.012</x-m>
+    <y-m>-0.183</y-m>
+    <z-m>0.50</z-m>
+  </position>
+  <direction>
+    <pitch-deg>90</pitch-deg>
+    <roll-deg>0</roll-deg>
+    <heading-deg>0</heading-deg>
+  </direction>
+  <ambient>
+    <r><property>sim/walker/flashlight/color-red-factor</property></r>
+    <g><property>sim/walker/flashlight/color-green-factor</property></g>
+    <b><property>sim/walker/flashlight/color-blue-factor</property></b>
+    <a>1</a>
+  </ambient>
+  <diffuse>
+    <r><property>sim/walker/flashlight/color-red-factor</property></r>
+    <g><property>sim/walker/flashlight/color-green-factor</property></g>
+    <b><property>sim/walker/flashlight/color-blue-factor</property></b>
+    <a>1</a>
+  </diffuse>
+  <specular>
+    <r><property>sim/walker/flashlight/color-red-factor</property></r>
+    <g><property>sim/walker/flashlight/color-green-factor</property></g>
+    <b><property>sim/walker/flashlight/color-blue-factor</property></b>
+    <a>1</a>
+  </specular>
+  <attenuation>
+    <c>1.0</c>
+    <l>0.09</l>
+    <q>0.032</q>
+  </attenuation>
+  <dim-factor><property>sim/walker/flashlight/dim-factor</property></dim-factor>
+  <spot-exponent>45</spot-exponent>
+  <spot-cutoff>50</spot-cutoff>
+  <range-m>10</range-m>
+</light>
+<animation>
+  <type>select</type>
+  <object-name>c182_flashlight</object-name>
+  <condition>
+    <and>
+      <greater-than>
+        <property>sim/walker/flashlight/mode</property>
+        <value>0</value>
+      </greater-than>
+      <property>sim/current-view/internal</property>
+    </and>
+  </condition>
+</animation>
+<animation>
+  <type>rotate</type>
+  <object-name>c182_flashlight</object-name>
+  <property>sim/current-view/heading-offset-deg</property>
+  <center>
+    <x-m>1.012</x-m>
+    <y-m>-0.183</y-m>
+    <z-m>0.50</z-m>
+  </center>
+  <axis>
+    <x>0</x>
+    <y>0</y>
+    <z>1</z>
+  </axis>
+</animation>
+<animation>
+  <type>rotate</type>
+  <object-name>c182_flashlight</object-name>
+  <property>sim/current-view/pitch-offset-deg</property>
+  <center>
+    <x-m>1.012</x-m>
+    <y-m>-0.183</y-m>
+    <z-m>0.50</z-m>
+  </center>
+  <axis>
+    <x>0</x>
+    <y>1</y>
+    <z>0</z>
+  </axis>
+</animation>
  
 <!--Exterior Lights-->
  <animation>
@@ -1870,7 +1973,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<greater-than>
@@ -1949,7 +2052,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<property>systems/electrical/outputs/strobe</property>
@@ -2073,7 +2176,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<property>systems/electrical/outputs/strobe</property>
@@ -2332,7 +2435,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<property>systems/electrical/outputs/nav-lights</property>
@@ -2423,7 +2526,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<property>systems/electrical/outputs/nav-lights</property>
@@ -2513,7 +2616,7 @@
 	<property>/sim/rendering/shaders/skydome</property>
 	</not>
 	<not>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	</not>
 	</or>
 	<property>systems/electrical/outputs/nav-lights</property>
@@ -2576,7 +2679,7 @@
 <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/beacon</property>
 </and>
 </condition>
@@ -2640,7 +2743,7 @@
     <condition>
         <and>
             <greater-than>
-                <property>/systems/electrical/outputs/pedestal-lights-norm</property>
+                <property>systems/electrical/outputs/pedestal-lights-norm</property>
                 <value>0</value>
             </greater-than>
             <property>sim/current-view/internal</property>
@@ -2694,16 +2797,16 @@
             <sum>
                 <product>
                     <value>0.5</value>
-                    <property>/systems/electrical/outputs/glareshield-lights-norm</property>
+                    <property>systems/electrical/outputs/glareshield-lights-norm</property>
                 </product>
-                <property>/systems/electrical/outputs/pedestal-lights-norm</property>
+                <property>systems/electrical/outputs/pedestal-lights-norm</property>
                 <product>
                     <value>0.20</value>
-                    <property>/systems/electrical/outputs/dome-light-r</property>
+                    <property>systems/electrical/outputs/dome-light-r</property>
                 </product>
                 <product>
                     <value>0.20</value>
-                    <property>/systems/electrical/outputs/dome-light-l</property>
+                    <property>systems/electrical/outputs/dome-light-l</property>
                 </product>
             </sum>
         </min>
@@ -2715,7 +2818,7 @@
 <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/nav-lights</property>
 </and>
 </condition>
@@ -2731,7 +2834,7 @@
 <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/nav-lights</property>
 </and>
 </condition>
@@ -2747,7 +2850,7 @@
  <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/nav-lights</property>
 </and>
 </condition>
@@ -2763,7 +2866,7 @@
 <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/strobe</property>
 </and>
 </condition>
@@ -2780,7 +2883,7 @@
 <condition>
 <and>
 	<property>/sim/rendering/shaders/skydome</property>
-	<property>/sim/model/c182s/procedural-lights</property>
+	<property>sim/model/c182s/procedural-lights</property>
 	<property>systems/electrical/outputs/strobe</property>
 </and>
 </condition>
@@ -2821,14 +2924,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-                <property>/sim/model/c182s/securing/pitot-cover-visible</property>
+                <property>sim/model/c182s/securing/pitot-cover-visible</property>
             </binding>
         </action>
         <hovered>
            <!-- <binding>
                 <command>set-tooltip</command>
                 <label>Pitot Cover: %s</label>
-                <property>/sim/model/c182s/securing/pitot-cover-visible</property>
+                <property>sim/model/c182s/securing/pitot-cover-visible</property>
                 <tooltip-id>pitot-cover</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>-->
@@ -2836,7 +2939,7 @@
                 <command>set-tooltip</command>
                 <tooltip-id>pitot</tooltip-id>
                 <label>%s</label>
-                <property>/sim/model/c182s/securing/pitot-cover-visible-changed</property>
+                <property>sim/model/c182s/securing/pitot-cover-visible-changed</property>
                 <mapping>nasal</mapping>
                 <script>
                     var cover = "On";
@@ -2884,14 +2987,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-	<property>/engines/engine/winter-kit-installed</property>
+	<property>engines/engine/winter-kit-installed</property>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <label>WinterKit installed: %s</label>
-	<property>/engines/engine/winter-kit-installed</property>
+	<property>engines/engine/winter-kit-installed</property>
                 <tooltip-id>WinterKit</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>
@@ -2908,7 +3011,7 @@
                 <value>0.1</value>
             </less-than>
             <less-than>
-                <property>/engines/engine/thruster/rpm</property>
+                <property>engines/engine/thruster/rpm</property>
                 <value>0.1</value>
             </less-than>
         </and>
@@ -2940,14 +3043,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-        <property>/sim/chocks002/enable</property>
+        <property>sim/chocks002/enable</property>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <label>Wheel Choke Left Main Gear: %s</label>
-        <property>/sim/chocks002/enable</property>
+        <property>sim/chocks002/enable</property>
                 <tooltip-id>wheel-chokes</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>
@@ -2964,14 +3067,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-        <property>/sim/chocks003/enable</property>
+        <property>sim/chocks003/enable</property>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <label>Wheel Choke Right Main Gear: %s</label>
-        <property>/sim/chocks003/enable</property>
+        <property>sim/chocks003/enable</property>
                 <tooltip-id>wheel-chokes</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>
@@ -3024,14 +3127,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-        <property>/sim/coneR/enable</property>
+        <property>sim/coneR/enable</property>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <label>Safety Cone: Right: %s</label>
-        <property>/sim/coneR/enable</property>
+        <property>sim/coneR/enable</property>
                 <tooltip-id>Safety Cone Right</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>
@@ -3048,14 +3151,14 @@
             <button>0</button>
             <binding>
                 <command>property-toggle</command>
-        <property>/sim/coneL/enable</property>
+        <property>sim/coneL/enable</property>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <label>Safety Cone: Left: %s</label>
-        <property>/sim/coneL/enable</property>
+        <property>sim/coneL/enable</property>
                 <tooltip-id>Safety Cone Left</tooltip-id>
                 <mapping>on-off</mapping>
             </binding>
@@ -3538,14 +3641,14 @@
                 <condition>
                     <and>
                         <not>            
-                            <property>/engines/engine[0]/running</property>
+                            <property>engines/engine[0]/running</property>
                         </not>
                         <less-than>
                             <property>velocities/groundspeed-kt</property>
                             <value>1.0</value>
                         </less-than>
                         <not>
-                            <property>/sim/current-view/internal</property>
+                            <property>sim/current-view/internal</property>
                         </not>
                     </and>
                 </condition>
@@ -3566,14 +3669,14 @@
                 <condition>
                     <and>
                         <not>            
-                            <property>/engines/engine[0]/running</property>
+                            <property>engines/engine[0]/running</property>
                         </not>
                         <less-than>
                             <property>velocities/groundspeed-kt</property>
                             <value>1.0</value>
                         </less-than>
                         <not>
-                            <property>/sim/current-view/internal</property>
+                            <property>sim/current-view/internal</property>
                         </not>
                     </and>
                 </condition>
@@ -3594,14 +3697,14 @@
                 <condition>
                     <and>
                         <not>            
-                            <property>/engines/engine[0]/running</property>
+                            <property>engines/engine[0]/running</property>
                         </not>
                         <less-than>
                             <property>velocities/groundspeed-kt</property>
                             <value>1.0</value>
                         </less-than>
                         <not>
-                            <property>/sim/current-view/internal</property>
+                            <property>sim/current-view/internal</property>
                         </not>
                     </and>
                 </condition>
@@ -3622,14 +3725,14 @@
                 <condition>
                     <and>
                         <not>            
-                            <property>/engines/engine[0]/running</property>
+                            <property>engines/engine[0]/running</property>
                         </not>
                         <less-than>
                             <property>velocities/groundspeed-kt</property>
                             <value>1.0</value>
                         </less-than>
                         <not>
-                            <property>/sim/current-view/internal</property>
+                            <property>sim/current-view/internal</property>
                         </not>
                     </and>
                 </condition>

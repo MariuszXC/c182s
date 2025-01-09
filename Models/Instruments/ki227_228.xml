@@ -89,23 +89,24 @@
     <type>rotate</type>
     <object-name>CompassRose</object-name>
     <property alias="../../params/rotation-deg"/>
-    <condition>
+    <!--<condition>
       <not>
         <equals>
           <property alias="../../../../../params/model"/>
           <value>ki228</value>
         </equals>
       </not>
-    </condition>
-    <factor>-1</factor>
+    </condition>-->
+<!--      <offset-deg>-120</offset-deg> -->
+    <factor>1</factor>
     <axis>
-      <x>-1</x>
+      <x>1</x>
       <y>0</y>
       <z>0</z>
     </axis>
   </animation>
 
-  <animation>
+  <!--<animation>
     <type>rotate</type>
     <object-name>CompassRose</object-name>
     <property alias="../../params/indicated-heading"/>
@@ -121,7 +122,7 @@
       <y>0</y>
       <z>0</z>
     </axis>
-  </animation>
+  </animation>-->
 
   
 
@@ -153,7 +154,8 @@
     <object-name>HDGSelector</object-name>
 
     <property alias="../../params/rotation-deg"/>
-    <factor>8.0</factor>
+    <factor>-8.0</factor>
+    <offset-deg>13</offset-deg>
     <axis>
       <x>1.0</x>
       <y>0.0</y>
@@ -177,12 +179,13 @@
     </action>
 
     <hovered>
-     <binding>
-       <command>set-tooltip</command>
-       <tooltip-id>adf-hdg</tooltip-id>
-       <label>ADF Heading: %3d</label>
-       <property alias="../../../../params/rotation-deg"/>
-    </binding>
+      <binding>
+        <command>set-tooltip</command>
+        <tooltip-id>adf-hdg</tooltip-id>
+        <mapping>heading</mapping>
+        <label>ADF Heading: %3d</label>
+        <property alias="../../../../params/rotation-deg"/>
+      </binding>
     </hovered>
   </animation>
   

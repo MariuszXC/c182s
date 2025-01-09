@@ -27,8 +27,14 @@
 <animation>
 	<type>rotate</type>
 	<object-name>Compass</object-name>
-	<property>instrumentation/magnetic-compass/roll-deg-final</property>
-	<factor>0.5</factor>
+	<expression>
+		<clip>
+			<clipMin>-25</clipMin>
+			<clipMax>25</clipMax>
+			<property>instrumentation/magnetic-compass/roll-deg</property>
+		</clip>
+	</expression>
+	<factor>1.0</factor>
 	<axis>
 		<x> 1.0 </x>
 		<y> 0.0 </y>
@@ -38,11 +44,17 @@
 <animation>
 	<type>rotate</type>
 	<object-name>Compass</object-name>
-	<property>instrumentation/magnetic-compass/pitch-deg-final</property>
-	<factor>0.5</factor>
+	<expression>
+		<clip>
+			<clipMin>-9</clipMin>
+			<clipMax>9</clipMax>
+			<property>instrumentation/magnetic-compass/pitch-deg</property>
+		</clip>
+	</expression>
+	<factor>1.0</factor>
 	<axis>
 		<x>  0.0 </x>
-		<y> -1.0 </y>
+		<y>  1.0 </y>
 		<z>  0.0 </z>
 	</axis>
 </animation>
@@ -97,7 +109,7 @@
 	<type>select</type>
 		<object-name>LabelText</object-name>
 	<condition>
-		<property>/sim/panel-hotspots</property>
+		<property>sim/panel-hotspots</property>
 	</condition>
 </animation>
 
@@ -110,7 +122,7 @@
       <command>set-tooltip</command>
       <tooltip-id>heading-bug</tooltip-id>
       <mapping>heading</mapping>
-      <label>Compass: %3.f</label>
+      <label>Compass: %3.0f</label>
       <property>instrumentation/magnetic-compass/indicated-heading-deg-final</property>
     </binding>
   </hovered>

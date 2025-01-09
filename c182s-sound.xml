@@ -1695,6 +1695,70 @@
                 <offset>0.0</offset>
             </pitch>
         </Gyro>
+
+        <AvionicsFan>
+            <type>Avionics</type>
+            <name>AvionicsFan</name>
+            <mode>looped</mode>
+            <path>Sounds/avionics-400Hz.wav</path>
+            <condition>
+                <greater-than>
+                    <property>/systems/electrical/avionics-fan/spin</property>
+                    <value>0.0</value>
+                </greater-than>
+            </condition>
+            <position>
+                <x>0.2000</x>
+                <y>-0.3000</y>
+                <z>0</z>
+            </position>
+            <reference-dist>0.1</reference-dist>
+            <max-dist>1.5</max-dist>
+            <volume>
+              <property>/systems/electrical/avionics-fan/spin</property>
+              <factor>0.05</factor>
+              <max>0.05</max>
+            </volume>
+            <pitch>
+                <property>/systems/electrical/avionics-fan/spin</property>
+                <factor>1.0</factor>
+                <min>0.001</min>
+                <max>1.0</max>
+                <offset>0.0</offset>
+            </pitch>
+        </AvionicsFan>
+
+        <AvionicsFan2>
+            <type>Avionics</type>
+            <name>AvionicsFan2</name>
+            <mode>looped</mode>
+            <path>Sounds/avionics-400Hz.wav</path>
+            <condition>
+                <greater-than>
+                    <property>/systems/electrical/avionics-fan[1]/spin</property>
+                    <value>0.0</value>
+                </greater-than>
+            </condition>
+            <position>
+                <x>0.2000</x>
+                <y>0.3000</y>
+                <z>0</z>
+            </position>
+            <reference-dist>0.1</reference-dist>
+            <max-dist>1.5</max-dist>
+            <volume>
+              <property>/systems/electrical/avionics-fan[1]/spin</property>
+              <factor>0.05</factor>
+              <max>0.05</max>
+            </volume>
+            <pitch>
+                <property>/systems/electrical/avionics-fan[1]/spin</property>
+                <factor>1.0</factor>
+                <min>0.001</min>
+                <max>1.0</max>
+                <offset>0.0</offset>
+            </pitch>
+        </AvionicsFan2>
 	
 <FuelPump>
             <type>Avionics</type>
@@ -1853,6 +1917,26 @@
         <reference-dist>0.4</reference-dist>
         <max-dist>5.0</max-dist>
     </davtron803-alert>
+    
+    <kr87-alert>
+        <name>KR87 ET countdown alarm</name>
+        <path>Sounds/beep.wav</path>
+        <mode>once</mode>
+        <condition>
+            <and>
+                <property>/instrumentation/adf/operable</property>
+                <property>/instrumentation/adf/enroute-timer/alarm-sound</property>
+            </and>
+        </condition>
+        <volume><factor>0.2</factor></volume>
+        <position>
+            <x-m>0.352</x-m>
+            <y-m>-0.433</y-m>
+            <z-m>0.402</z-m>
+        </position>
+        <reference-dist>0.4</reference-dist>
+        <max-dist>5.0</max-dist>
+    </kr87-alert>
 </fx>
  
 </PropertyList>

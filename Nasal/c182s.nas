@@ -372,11 +372,22 @@ BaggageDoor.setpos(BaggageDoor_saved);
 WindowL.setpos(WindowL_saved);
 WindowR.setpos(WindowR_saved);
 
+# Plane cover
+setlistener("/sim/model/c182s/securing/plane-cover-visible", func(n) {
+    if (n.getBoolValue()) {
+        DoorL.setpos(0);
+        DoorR.setpos(0);
+        BaggageDoor.setpos(0);
+        WindowL.setpos(0);
+        WindowR.setpos(0);
+    }
+});
 
 #####################
 # Adjust properties when in motion
 # - external electrical disconnect when groundspeed higher than 0.1ktn (replace later with distance less than 0.01...)
 # - remove external heat
+# - remove plane cover
 ad = func {
     GROUNDSPEED = getprop("/velocities/groundspeed-kt") or 0;
     AGL         = getprop("/position/altitude-agl-ft")  or 0;
@@ -384,6 +395,7 @@ ad = func {
     if (GROUNDSPEED > 0.1) {
         setprop("/controls/electric/external-power", "false");
         #setprop("/engines/engine/external-heat/enabled", "false"); #not needed, as you can't start the engine with preheater enabled, nor enable the preheater anyway when engine running, or aircraft moving
+        setprop("/sim/model/c182s/securing/plane-cover-visible", "false");
         setprop("/controls/fuel/tank[0]/fill-up", 0);
         setprop("/controls/fuel/tank[1]/fill-up", 0);
     }
@@ -855,6 +867,84 @@ setlistener("/sim/model/c182s/parachuters/trigger-jump", func(node) {
 
 
 ##########
+# Pax outfit/model restore
+# (This needs to be done time delayed, because humans.xml overloads the values with fdm-init.
+#  The state from the aircraft savefile is loaded initially, so we can read the values at startup time)
+##########
+var c182_pax_savedvars = [];
+foreach (pax_type; ["crew/pilot", "pax/pax"]) {
+    for (var i=0; i<=1; i += 1) {
+        foreach (pax_item; ["gender", "eyewear", "headgear", "hair", "outfit"]) {
+            var pax_path   = "/sim/model/" ~ pax_type ~ "["~i~"]/"~pax_item;
+            var pax_path_v = getprop(pax_path);
+            if (pax_path_v != nil) {
+                #print("PAX saved value = "~pax_path~" (value='"~pax_path_v~"')");
+                append(c182_pax_savedvars, [pax_path, pax_path_v]);
+            }
+        }
+    }
+}
+settimer(func {
+    foreach (pax_restore; c182_pax_savedvars) {
+        var pax_path   = pax_restore[0];
+        var pax_path_v = pax_restore[1];
+        if (pax_path_v != -1) {
+            #print("PAX restore value '"~pax_path~"'='"~pax_path_v~"'");
+            setprop(pax_path, pax_path_v);
+        }
+    }
+}, 1.0);
+
+
+##########
+# C182 internal cockpit flashlight (example how to mod it)
+##########
+var c182_flashlight_la  = -100;
+var c182_flashlight_lad = 10;
+var c182_flashlight_ac  = 0;
+var c182_flashlight_acd = 30;
+var c182_flashlight_ts  = 0.25;
+var c182_flashlight_tmf = 1;
+var c182_flashlight_tm  = maketimer(0.1, func{
+    var ts = c182_flashlight_ts;
+    if (c182_flashlight_tmf) {
+        logger.screen.red("E"~" N"~" J "~"O"~" Y"~" !");
+        c182_flashlight_tmf = 0;
+    }
+    setprop("sim/walker/flashlight/dim-factor", 1.0);
+    setprop("sim/walker/flashlight/color-red-factor",   1.0);
+    setprop("sim/walker/flashlight/color-green-factor", 0.0);
+    setprop("sim/walker/flashlight/color-blue-factor",  0.0);
+    interpolate("sim/walker/flashlight/color-red-factor",   1.0, ts, 0.0, ts, 0.0, ts, 0.0, ts, 1.0, ts, 1.0, ts);
+    interpolate("sim/walker/flashlight/color-green-factor", 0.0, ts, 0.0, ts, 1.0, ts, 1.0, ts, 1.0, ts, 0.0, ts);
+    interpolate("sim/walker/flashlight/color-blue-factor",  1.0, ts, 1.0, ts, 1.0, ts, 0.0, ts, 0.0, ts, 0.0, ts);
+    if (getprop("sim/walker/flashlight/mode") == 1337)
+        c182_flashlight_tm.restart(ts*6);
+});
+setlistener("sim/walker/flashlight/mode", func(n) {
+    c182_flashlight_ac += 1;
+    var tnow = getprop("/sim/time/elapsed-sec");
+    if (c182_flashlight_la + c182_flashlight_lad < tnow) {
+        c182_flashlight_la = tnow;
+        c182_flashlight_ac = 1;
+        if (c182_flashlight_tm.isRunning) {
+            c182_flashlight_tm.stop();
+            setprop("sim/walker/flashlight/mode", 0);
+        }
+    } else {
+        if (c182_flashlight_ac >= c182_flashlight_acd) {
+            setprop("sim/walker/flashlight/mode", 1337);
+            if (!c182_flashlight_tm.isRunning) {
+                c182_flashlight_tmf = 1;
+                c182_flashlight_tm.restart(0.1);
+                c182_flashlight_la = tnow-c182_flashlight_lad+2;
+            }
+        }
+    }
+});
+
+
+##########
 # FGComands for bindings
 ##########
 var c182_cowlflap_step = func(v) {
@@ -870,6 +960,99 @@ addcommand("c182_cowlflap_step_open", func {
 addcommand("c182_cowlflap_step_close", func {
     c182_cowlflap_step(-0.25);
 });
+
+
+#
+# Realism settings
+#
+var latitude_nut_update = func() {
+    var p = "/instrumentation/heading-indicator/latitude-nut-setting";
+    var lat = getprop("position/latitude-deg");
+    var tgt = sprintf("%2.0f", lat);
+    var cur = sprintf("%2.0f", getprop(p));
+    if (tgt != cur) {
+        setprop(p, tgt);
+        print("C182 HI/DG latitude nut adjusted from "~cur~"° to "~tgt~"°");
+    }
+}
+var latitude_nut_setter_timer = maketimer(30.0, latitude_nut_update);
+
+# Define realism adjustments. Default values here are the "unrealistic" settings.
+var prev_realism_state = [
+    {
+        id:"attitude-indicator",
+        node: props.globals.getNode("/instrumentation/attitude-indicator"),
+        props:[
+            {name:"gyro/spin-up-sec",        value:4.0}
+        ]
+    },
+    {
+        id:"heading-indicator",
+        node: props.globals.getNode("/instrumentation/heading-indicator"),
+        props:[
+            {name:"gyro/spin-up-sec",        value:4.0},
+            {name:"limits/g-error-factor",   value:0.0},
+            {name:"limits/yaw-error-factor", value:0.0},
+            {name:"limits/g-limit-lower",    value:-99.0},
+            {name:"limits/g-limit-upper",    value:99.0}
+        ]
+    },
+    {
+        id:"turn-indicator",
+        node: props.globals.getNode("/instrumentation/turn-indicator"),
+        props:[
+            {name:"gyro/spin-up-sec",        value:4.0}
+        ]
+    },
+    {
+        id:"magnetic-compass",
+        node: props.globals.getNode("/instrumentation/magnetic-compass"),
+        props:[
+            {name:"roll-limit-left",        value:-999.0},
+            {name:"roll-limit-right",       value:999.0},
+            {name:"pitch-limit-up",         value:999.0},
+            {name:"pitch-limit-down",       value:-999.0}
+        ]
+    },
+];
+var setRealismInstruments_setting = 1;
+var setRealismInstruments = func() {
+    var activate    = getprop("/sim/realism/instruments/realistic-instruments");
+    if (activate == setRealismInstruments_setting) return;
+
+    setRealismInstruments_setting = activate;
+    var setting_txt = (activate)? "enabled": "disabled";
+    print("C182 realistic instruments: "~setting_txt);
+
+    # Swap the current value with the old one for each defined prop
+    foreach (item; prev_realism_state) {
+        print("  "~item.id);
+        foreach (p; item.props) {
+            var cur_val = item.node.getValue(p.name);
+            #print("    "~p.name~ "\t\t(old="~cur_val~"; new="~p.value~")");
+            item.node.setValue(p.name, p.value);
+            p.value = cur_val;
+        }
+    }
+    
+    # Do some specific actions
+    if (getprop("/sim/aircraft") == "c182s") {
+        if (activate) {
+            # Activate realistic behaviour
+            latitude_nut_setter_timer.stop();
+            print("  HI/DG latitude nut autoset stopped");
+
+        } else {
+            # Make unrealistic
+            latitude_nut_update();
+            latitude_nut_setter_timer.start();
+            print("  HI/DG latitude nut autoset activated");
+        }
+    }
+
+}
+
+
 
 
 ###########
@@ -942,7 +1125,86 @@ setlistener("/sim/signals/fdm-initialized", func {
         print("C182 FGCamera integration loaded");
     }
 
+    # If we are starting outside and in cold weather, add some ice/snow to the plane
+    # We use the metar value for this, as it seems always to be set. Either coming from
+    # the metar fetcher, or "0" if something failed, or properly initialized from manual select
+    settimer(func() {
+        var coverPresent    = getprop("/sim/model/c182s/securing/plane-cover-visible");
+        var fogFrostEnabled = getprop("/sim/model/c182s/enable-fog-frost") or 0;
+        var tempC_OAT       = getprop("/environment/metar/temperature-degc") or 0;
+        var engStartingOrRunning = getprop("/fdm/jsbsim/propulsion/engine/set-running")
+                                or getprop("/engines/engine/auto-start")
+                                or getprop("/engines/engine/running")
+                                or 0;
+        #debug.dump(["Startup weather DBG",
+        #    ["fogFfogFrostEnabled",fogFfogFrostEnabled],
+        #    ["coverPresent",coverPresent],
+        #    ["tempC_OAT",tempC_OAT],
+        #    ["engStartingOrRunning",engStartingOrRunning]
+        #]);
+        
+        if (tempC_OAT < -1 and fogFrostEnabled and !coverPresent and !engStartingOrRunning) {
+            print("Startup frost added (it's really cold and we were parked without cover)");
+            setprop("/fdm/jsbsim/ice/wing", 0.2);
+            setprop("/fdm/jsbsim/ice/stabilizer", 0.2);
+            setprop("/fdm/jsbsim/ice/propeller", 0.2);
+            setprop("/fdm/jsbsim/ice/fuselage", 0.2);
+            setprop("/fdm/jsbsim/ice/windshield", 0.2);
+            setprop("/systems/static[0]/icing", 0.2);
+            
+            setprop("/fdm/jsbsim/heat/init-moisture", 0.45);
+            settimer(func() { setprop("/fdm/jsbsim/heat/init-moisture", 0); }, 5.0, 0);
+        }
+    }, 1.0, 0);
+
+
+    # HI/DG: Reset offset to stored values
+    # The DG always initializes to indicated_heading=/orientation/heading-deg, so we need to apply the
+    # difference of the last known orientation to offset the HI, so it shows the last stored value.
+    # The result is, that the HI is only correctly aligned when the planes location and orientation did
+    # not change between sessions AND it was calibrated correctly.
+    # (This all would be alot easier if the c++ instrument would initialize to saved values)
+    var dg_offset_storemode = 0;
+    var dg_hdg_cur      = props.globals.getNode("/orientation/heading-deg");
+    var dg_hdg_saved    = props.globals.getNode("/orientation/heading-deg-saved", 1);
+    var dg_offset_cur   = props.globals.getNode("/instrumentation/heading-indicator/offset-deg");
+    var dg_offset_saved = props.globals.getNode("/instrumentation/heading-indicator/offset-deg-saved", 1);
+    var dg_error_cur    = props.globals.getNode("/instrumentation/heading-indicator/error-deg");
+    var dg_error_saved  = props.globals.getNode("/instrumentation/heading-indicator/error-deg-saved", 1);
+    
+    # Restore values from last session
+    if (dg_hdg_saved.getValue() != nil and dg_offset_saved.getValue() != nil and dg_error_saved.getValue() != nil) {
+        print("C182 restore HI/DG settings...");
+        print("  HI/DG startup error: "~sprintf("%.2f",dg_error_saved.getValue()));
+        dg_error_cur.setDoubleValue(dg_error_saved.getValue());
+        
+        print("  HI/DG startup offset: "~sprintf("%.2f",dg_offset_saved.getValue()));
+        dg_offset_cur.setDoubleValue(dg_offset_saved.getValue());
+        
+        # Apply orientation difference from last session
+        var hdg_diff           = dg_hdg_saved.getValue() - dg_hdg_cur.getValue();
+        var dg_offset_startup  = dg_offset_cur.getValue() + hdg_diff;
+        print("  HI/DG startup heading: from "~sprintf("%.2f",dg_offset_cur.getValue())~" to "~sprintf("%.2f",dg_offset_startup)~" (stored orientation diff="~sprintf("%.2f", hdg_diff)~")");
+        dg_offset_cur.setDoubleValue(dg_offset_startup);
+    }
+    
+    # Store values for next session (as we can't store the instruments values itself, they get overwritten)
+    var dg_offset_startup_timer = maketimer(1.0, func(){
+            dg_hdg_saved.setDoubleValue(dg_hdg_cur.getValue());
+            #print("C182 updating stored HI/DG heading to "~dg_hdg_saved.getValue());
+            dg_offset_saved.setDoubleValue(dg_offset_cur.getValue());
+            #print("C182 updating stored HI/DG offset to "~dg_offset_saved.getValue());
+            dg_error_saved.setDoubleValue(dg_error_cur.getValue());
+            #print("C182 updating stored HI/DG error to "~dg_error_saved.getValue());
+    });
+    dg_offset_startup_timer.start();
+
+    # Handle realism settings
+    setlistener("/sim/realism/instruments/realistic-instruments", setRealismInstruments, 1, 0);
+
 });
+
+
 
 # generate legacy author property (used by the about dialog)
 var authors = [];
